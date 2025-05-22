@@ -459,6 +459,14 @@ spec:
                       type: object
                   type: object
                 type: array
+              serverHeaderTransformation:
+                enum:
+                - OVERWRITE
+                - APPEND_IF_ABSENT
+                - PASS_THROUGH
+                type: string
+              streamIdleTimeout:
+                type: string
               targetRefs:
                 items:
                   properties:
@@ -505,6 +513,11 @@ spec:
                   - matchLabels
                   type: object
                 type: array
+              useRemoteAddress:
+                type: boolean
+              xffNumTrustedHops:
+                format: int32
+                type: integer
             type: object
           status:
             properties:

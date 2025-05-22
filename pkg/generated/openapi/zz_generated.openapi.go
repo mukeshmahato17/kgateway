@@ -2615,11 +2615,38 @@ func schema_kgateway_v2_api_v1alpha1_HTTPListenerPolicySpec(ref common.Reference
 							},
 						},
 					},
+					"useRemoteAddress": {
+						SchemaProps: spec.SchemaProps{
+							Description: "UseRemoteAddress determines whether to use the real remote address of the client connection when determining internal versus external origin and manipulating various headers. If set to false or absent, the connection manager will use the x-forwarded-for HTTP header.",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+					"xffNumTrustedHops": {
+						SchemaProps: spec.SchemaProps{
+							Description: "XffNumTrustedHops is the number of additional ingress proxy hops from the right side of the x-forwarded-for HTTP header to trust when determining the origin client's IP address. The default is zero if this option is not specified.",
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
+					"serverHeaderTransformation": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ServerHeaderTransformation defines the action to be applied to the Server header on the response path. By default, Envoy will overwrite the header with the value specified in server_name.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"streamIdleTimeout": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StreamIdleTimeout is the idle timeout for streams managed by the connection manager. The default is 5 minutes if not specified.",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+						},
+					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AccessLog", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetReference", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetSelector"},
+			"github.com/kgateway-dev/kgateway/v2/api/v1alpha1.AccessLog", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetReference", "github.com/kgateway-dev/kgateway/v2/api/v1alpha1.LocalPolicyTargetSelector", "k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
 	}
 }
 

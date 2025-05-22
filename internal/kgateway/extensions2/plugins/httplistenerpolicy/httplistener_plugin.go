@@ -11,6 +11,8 @@ import (
 	envoy_config_route_v3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	envoy_hcm "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 	skubeclient "istio.io/istio/pkg/config/schema/kubeclient"
 	"istio.io/istio/pkg/kube/kclient"
 	"istio.io/istio/pkg/kube/krt"
@@ -194,6 +196,34 @@ func (p *httpListenerPolicyPluginGwPass) ApplyHCM(
 
 	// translate access logging configuration
 	out.AccessLog = append(out.GetAccessLog(), policy.accessLog...)
+
+	// Apply use_remote_address configuration
+	if policy.useRemoteAddress != nil {
+		out.UseRemoteAddress = wrapperspb.Bool(*policy.useRemoteAddress)
+	}
+
+	// Apply xff_num_trusted_hops configuration
+	if policy.xffNumTrustedHops != nil {
+		out.XffNumTrustedHops = *policy.xffNumTrustedHops
+	}
+
+	// Apply server_header_transformation configuration
+	if policy.serverHeaderTransformation != nil {
+		switch *policy.serverHeaderTransformation {
+		case "OVERWRITE":
+			out.ServerHeaderTransformation = envoy_hcm.HttpConnectionManager_OVERWRITE
+		case "APPEND_IF_ABSENT":
+			out.ServerHeaderTransformation = envoy_hcm.HttpConnectionManager_APPEND_IF_ABSENT
+		case "PASS_THROUGH":
+			out.ServerHeaderTransformation = envoy_hcm.HttpConnectionManager_PASS_THROUGH
+		}
+	}
+
+	// Apply stream_idle_timeout configuration
+	if policy.streamIdleTimeout != nil {
+		out.StreamIdleTimeout = durationpb.New(*policy.streamIdleTimeout)
+	}
+
 	return nil
 }
 

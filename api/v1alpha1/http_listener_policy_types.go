@@ -50,6 +50,29 @@ type HTTPListenerPolicySpec struct {
 	// See here for more information: https://www.envoyproxy.io/docs/envoy/v1.33.0/api-v3/config/accesslog/v3/accesslog.proto
 	// +kubebuilder:validation:Items={type=object}
 	AccessLog []AccessLog `json:"accessLog,omitempty"`
+
+	// UseRemoteAddress determines whether to use the real remote address of the client connection
+	// when determining internal versus external origin and manipulating various headers.
+	// If set to false or absent, the connection manager will use the x-forwarded-for HTTP header.
+	// +optional
+	UseRemoteAddress *bool `json:"useRemoteAddress,omitempty"`
+
+	// XffNumTrustedHops is the number of additional ingress proxy hops from the right side of the
+	// x-forwarded-for HTTP header to trust when determining the origin client's IP address.
+	// The default is zero if this option is not specified.
+	// +optional
+	XffNumTrustedHops *uint32 `json:"xffNumTrustedHops,omitempty"`
+
+	// ServerHeaderTransformation defines the action to be applied to the Server header on the response path.
+	// By default, Envoy will overwrite the header with the value specified in server_name.
+	// +optional
+	// +kubebuilder:validation:Enum=OVERWRITE;APPEND_IF_ABSENT;PASS_THROUGH
+	ServerHeaderTransformation *string `json:"serverHeaderTransformation,omitempty"`
+
+	// StreamIdleTimeout is the idle timeout for streams managed by the connection manager.
+	// The default is 5 minutes if not specified.
+	// +optional
+	StreamIdleTimeout *metav1.Duration `json:"streamIdleTimeout,omitempty"`
 }
 
 // AccessLog represents the top-level access log configuration.

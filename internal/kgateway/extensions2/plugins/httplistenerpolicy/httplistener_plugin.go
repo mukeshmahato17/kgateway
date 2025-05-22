@@ -34,8 +34,12 @@ import (
 var logger = logging.New("plugin/httplistenerpolicy")
 
 type httpListenerPolicy struct {
-	ct        time.Time
-	accessLog []*envoyaccesslog.AccessLog
+	ct                         time.Time
+	accessLog                  []*envoyaccesslog.AccessLog
+	useRemoteAddress           *bool
+	xffNumTrustedHops          *uint32
+	serverHeaderTransformation *string
+	streamIdleTimeout          *time.Duration
 }
 
 func (d *httpListenerPolicy) CreationTime() time.Time {
@@ -52,6 +56,35 @@ func (d *httpListenerPolicy) Equals(in any) bool {
 	if !slices.EqualFunc(d.accessLog, d2.accessLog, func(log *envoyaccesslog.AccessLog, log2 *envoyaccesslog.AccessLog) bool {
 		return proto.Equal(log, log2)
 	}) {
+		return false
+	}
+
+	// Check other fields
+	if (d.useRemoteAddress == nil) != (d2.useRemoteAddress == nil) {
+		return false
+	}
+	if d.useRemoteAddress != nil && *d.useRemoteAddress != *d2.useRemoteAddress {
+		return false
+	}
+
+	if (d.xffNumTrustedHops == nil) != (d2.xffNumTrustedHops == nil) {
+		return false
+	}
+	if d.xffNumTrustedHops != nil && *d.xffNumTrustedHops != *d2.xffNumTrustedHops {
+		return false
+	}
+
+	if (d.serverHeaderTransformation == nil) != (d2.serverHeaderTransformation == nil) {
+		return false
+	}
+	if d.serverHeaderTransformation != nil && *d.serverHeaderTransformation != *d2.serverHeaderTransformation {
+		return false
+	}
+
+	if (d.streamIdleTimeout == nil) != (d2.streamIdleTimeout == nil) {
+		return false
+	}
+	if d.streamIdleTimeout != nil && *d.streamIdleTimeout != *d2.streamIdleTimeout {
 		return false
 	}
 
@@ -112,8 +145,12 @@ func NewPlugin(ctx context.Context, commoncol *common.CommonCollections) extensi
 			ObjectSource: objSrc,
 			Policy:       i,
 			PolicyIR: &httpListenerPolicy{
-				ct:        i.CreationTimestamp.Time,
-				accessLog: accessLog,
+				ct:                         i.CreationTimestamp.Time,
+				accessLog:                  accessLog,
+				useRemoteAddress:           i.Spec.UseRemoteAddress,
+				xffNumTrustedHops:          i.Spec.XffNumTrustedHops,
+				serverHeaderTransformation: i.Spec.ServerHeaderTransformation,
+				streamIdleTimeout:          func() *time.Duration { d := i.Spec.StreamIdleTimeout.Duration; return &d }(),
 			},
 			TargetRefs: pluginutils.TargetRefsToPolicyRefs(i.Spec.TargetRefs, i.Spec.TargetSelectors),
 			Errors:     errs,
